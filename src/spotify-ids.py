@@ -3,13 +3,13 @@ from spotipy.oauth2 import SpotifyClientCredentials
 from pymongo import MongoClient
 
 client = MongoClient()
-db = client.spotify_ingest
+db = client.soul
 songs = db.songs
 
 analysis_outfile = open("missed_song_analysis.txt", "w")
 id_outfile = open("spotify_id_missing.txt", "w")
 
-client_credentials_manager = SpotifyClientCredentials()
+client_credentials_manager = SpotifyClientCredentials("2b17af7dc451456e9346c2af84ced427","fd8024a122e14995b8ea2d5c4564d5ec")
 sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 
 # loops through db to grab each song
@@ -27,7 +27,7 @@ for song in songs.find():
 
     # Removes featuring from artist names, easier for spotify lookup
     if "featuring" in song_artist.lower():
-        song_artist = song_artist.split("Featuring", 1)[0]
+        song_artist = song_artist.split("Featuring", 1)[0].strip()
 
     # grabs spotify id
     search_results = sp.search(q='artist:{} track:{}'.format(song_artist, song_name), type='track')
@@ -41,7 +41,7 @@ for song in songs.find():
         continue
 
     # Grabs audio analysis
-    audio_analysis = sp.audio_analysis(spotify_id)
+    #audio_analysis = sp.audio_analysis(spotify_id)
     audio_features = sp.audio_features(spotify_id)
 
     # updates document with audio_features
@@ -50,6 +50,7 @@ for song in songs.find():
         },
         {
             "$set":{
+            "spotify_id": spotify_id,
             "audio_features":{
                     "danceability": audio_features[0]["danceability"],
                     "energy": audio_features[0]["energy"],
