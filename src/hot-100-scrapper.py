@@ -1,30 +1,41 @@
 import billboard
 from pymongo import MongoClient
-import os
 
 client = MongoClient()
-db = client.billboard_db
-tracks = db.tracks
+db = client.soul
+songs = db.songs
+billboard_ranks = db.billboard_ranks
 
-chart = billboard.ChartData('hot-100')
+chart = billboard.ChartData('hot-100', date="1988-01-16")
 
 while chart.previousDate:
-	chart = billboard.ChartData('hot-100', date=chart.previousDate)
-	chartDate = chart.date
-	print(chartDate)
+    chart = billboard.ChartData('hot-100', date=chart.previousDate)
+    print(chart.date)
+    for rank in range(100):
+        song = chart[rank]
+        search = { "name": song.title, "artist.name": song.artist }
+        lookup = songs.find_one( search )
 
-	for rank in range(100):
-		song = chart[rank]
-		post = {
-			"spotify_id": " ",
-			"track": str(song.title),
-			"artist": str(song.artist),
-			"rank": rank,
-			"peak": str(song.peakPos),
-			"lastPos": str(song.lastPos),
-			"weeks": str(song.weeks),
-			"date": chart.date
-		}
+        if lookup is None:
+            song_post = {
+                "name": song.title,
+                "artist": {
+                    "name": song.artist
+                }
+            }
 
-		insert = tracks.insert_one(post).inserted_id
+            song_id = songs.insert_one(song_post).inserted_id
 
+            ranks_post = {
+                "date": str(chart.date),
+                "rank": rank,
+                "song_id": song_id
+            }
+        else:
+            ranks_post = {
+                "date": str(chart.date),
+                "rank": rank,
+                "song_id": lookup["_id"]
+            }
+
+        billboard_ranks.insert_one(ranks_post)
