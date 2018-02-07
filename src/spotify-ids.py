@@ -30,12 +30,18 @@ for song in songs.find():
         song_artist = song_artist.split("Featuring", 1)[0].strip()
 
     # grabs spotify id
-    search_results = sp.search(q='artist:{} track:{}'.format(song_artist, song_name), type='track')
+    try:
+        search_results = sp.search(q='artist:{} track:{}'.format(song_artist, song_name), type='track')
+    except Exception as ex:
+        id_outfile.write(song_artist + ", " + song_name + ": " + "Spotify track returns 404 error" + "\n")
+        print(song_artist + ", " + song_name + ": " + "Spotify track returns 404 error" + "\n")
+        song_count+=1
+        continue
 
     try:
         spotify_id = search_results["tracks"]["items"][0]["id"]
     except Exception as ex:
-        id_outfile.write(song_artist + ", " + song_name + ": " + "Spotify track not found")
+        id_outfile.write(song_artist + ", " + song_name + ": " + "Spotify track_id not found" + "\n")
         print(song_artist + ", " + song_name + ": " + "Spotify track not found")
         song_count+=1
         continue
