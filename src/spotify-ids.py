@@ -9,7 +9,7 @@ songs = db.songs
 analysis_outfile = open("missed_song_analysis.txt", "w")
 id_outfile = open("spotify_id_missing.txt", "w")
 
-client_credentials_manager = SpotifyClientCredentials("2b17af7dc451456e9346c2af84ced427","fd8024a122e14995b8ea2d5c4564d5ec")
+client_credentials_manager = SpotifyClientCredentials()
 sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 
 # loops through db to grab each song
