@@ -43,7 +43,7 @@ for song in songs.find():
     print(song_name, song_artist, song_id)
 
     if "featuring" in song_artist.lower():
-        song_artist = song_artist.split("Featuring", 1)[0]
+        song_artist = song_artist.split("Featuring", 1)[0].strip()
 
     try:
         lyrics = get_lyrics(song_artist, song_name)
