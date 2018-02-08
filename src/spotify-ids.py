@@ -1,15 +1,17 @@
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 from pymongo import MongoClient
+import yaml
 
 client = MongoClient()
-db = client.soul
+db = client.spotify_ingest
 songs = db.songs
 
-analysis_outfile = open("missed_song_analysis.txt", "w")
 id_outfile = open("spotify_id_missing.txt", "w")
+credentials = yaml.load(open("credentials.yml", "r"))
 
-client_credentials_manager = SpotifyClientCredentials()
+# Remember to remove credentials!
+client_credentials_manager = SpotifyClientCredentials(credentials["spotify"]["client"], credentials["spotify"]["secret"])
 sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 
 # loops through db to grab each song
@@ -42,13 +44,41 @@ for song in songs.find():
         spotify_id = search_results["tracks"]["items"][0]["id"]
     except Exception as ex:
         id_outfile.write(song_artist + ", " + song_name + ": " + "Spotify track_id not found" + "\n")
-        print(song_artist + ", " + song_name + ": " + "Spotify track not found")
+        print(song_artist + ", " + song_name + ": " + "Spotify track_id not found")
         song_count+=1
         continue
 
     # Grabs audio analysis
     #audio_analysis = sp.audio_analysis(spotify_id)
-    audio_features = sp.audio_features(spotify_id)
+
+    try:
+        audio_features = sp.audio_features(spotify_id)
+    except Exception as ex:
+        id_outfile.write(song_artist + ", " + song_name + ": " + "Spotify audio features result not found" + "\n")
+        print(song_artist + ", " + song_name + ": " + "Spotify audio features result not found")
+        song_count += 1
+        continue
+
+    # tries to grab audio features for mongo db post
+    try:
+        danceability = audio_features[0]["danceability"]
+        energy = audio_features[0]["energy"]
+        key = audio_features[0]["key"]
+        loudness = audio_features[0]["loudness"]
+        mode = audio_features[0]["mode"]
+        speechiness = audio_features[0]["speechiness"]
+        acousticness = audio_features[0]["acousticness"]
+        instrumentalness = audio_features[0]["instrumentalness"]
+        liveness = audio_features[0]["liveness"]
+        valence = audio_features[0]["valence"]
+        tempo = audio_features[0]["tempo"]
+        duration_ms = audio_features[0]["duration_ms"]
+        time_signature = audio_features[0]["time_signature"]
+    except Exception as ex:
+        id_outfile.write(song_artist + ", " + song_name + ": " + "Spotify audio features are incomplete" + "\n")
+        print(song_artist + ", " + song_name + ": " + "Spotify audio features are incomplete" + "\n")
+        song_count += 1
+        continue
 
     # updates document with audio_features
     songs.update({
@@ -78,12 +108,4 @@ for song in songs.find():
 
     song_count += 1
 
-analysis_outfile.close()
 id_outfile.close()
-
-"""
-for song in songs.find()
-    get id
-    lookup on spotify and get spotify_id and analysis
-    add to document
-"""
