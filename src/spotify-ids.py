@@ -4,7 +4,7 @@ from pymongo import MongoClient
 import yaml
 
 client = MongoClient()
-db = client.spotify_ingest
+db = client.soul
 songs = db.songs
 
 id_outfile = open("spotify_id_missing.txt", "w")
