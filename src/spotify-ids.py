@@ -88,19 +88,19 @@ for song in songs.find():
             "$set":{
             "spotify_id": spotify_id,
             "audio_features":{
-                    "danceability": audio_features[0]["danceability"],
-                    "energy": audio_features[0]["energy"],
-                    "key": audio_features[0]["key"],
-                    "loudness": audio_features[0]["loudness"],
-                    "mode": audio_features[0]["mode"],
-                    "speechiness": audio_features[0]["speechiness"],
-                    "acousticness": audio_features[0]["acousticness"],
-                    "instrumentalness": audio_features[0]["instrumentalness"],
-                    "liveness": audio_features[0]["liveness"],
-                    "valence": audio_features[0]["valence"],
-                    "tempo": audio_features[0]["tempo"],
-                    "duration_ms": audio_features[0]["duration_ms"],
-                    "time_signature": audio_features[0]["time_signature"]
+                    "danceability": danceability,
+                    "energy": energy,
+                    "key": key,
+                    "loudness": loudness,
+                    "mode": mode,
+                    "speechiness": speechiness,
+                    "acousticness": acousticness,
+                    "instrumentalness": instrumentalness,
+                    "liveness": liveness,
+                    "valence": valence,
+                    "tempo": tempo,
+                    "duration_ms": duration_ms,
+                    "time_signature": time_signature
                 }
             }
         }
