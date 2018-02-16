@@ -25,6 +25,9 @@ def compute_longevity():
         else:
             current_hash[song_id] = [document_id, 1]
 
+
+    update_documents(current_hash)
+
     return
 
 def update_documents(current_dict):
