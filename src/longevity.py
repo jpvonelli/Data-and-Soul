@@ -15,28 +15,31 @@ def compute_longevity():
         song_id = document["song_id"]
 
         if current_date != date:
-            update_documents(current_hash, document_id)
+            update_documents(current_hash)
             prev_hash = current_hash
             current_hash = {}
 
         else:
-            if song_id in prev_hash.keys():
+            if song_id in prev_hash:
                 current_hash[song_id] = [document_id, prev_hash['song_id'][1] + 1]
             else:
                 current_hash[song_id] = [document_id, 1]
 
     return
 
-def update_documents(current_dict, doc_id, doc_song_id):
-    billboard_ranks.update({
-        "_id": doc_id
-    },
-        {
-            "$set": {
-                "longevity": current_dict[doc_song_id][1]
+def update_documents(current_dict):
+
+    for key in current_dict.keys():
+
+        billboard_ranks.update({
+            "_id": current_dict[key][0]
+        },
+            {
+                "$set": {
+                    "longevity": current_dict[key][1]
+                }
             }
-        }
-    )
+        )
 
 compute_longevity()
 
