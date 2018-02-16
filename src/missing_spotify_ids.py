@@ -29,13 +29,24 @@ for song in songs.find({"spotify_id": {"$exists": False}}):
     song_artist = song_artist.split(",", 1)[0].strip()
     print(song_artist)
 
-    if "&" in song_artist.lower() or "and" in song_artist.lower():
-        song_artist = song_artist.split(",", 1)[0].strip()
+    if "&" in song_artist:
+        song_artist = song_artist.split("&", 1)[0].strip()
+
+    if "and" in song_artist:
+        song_artist = song_artist.split("and", 1)[0].strip()
+
+    if "And" in song_artist:
+        song_artist = song_artist.split("And", 1)[0].strip()
 
     # Removes featuring from artist names, easier for spotify lookup
     if "featuring" in song_artist.lower():
+        song_artist = song_artist.split("featuring", 1)[0].strip()
+
+    if "Featuring" in song_artist:
         song_artist = song_artist.split("Featuring", 1)[0].strip()
 
+
+    print("SONG ARTIST: " + song_artist)
 
     # grabs spotify id
     try:
