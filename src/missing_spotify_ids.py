@@ -7,8 +7,7 @@ client = MongoClient()
 db = client.soul
 songs = db.songs
 
-infile = open("missing_id_test.txt", "r")
-outfile = open("spotify_id_missing.txt")
+outfile = open("spotify_id_missing.txt", "w")
 credentials = yaml.load(open("credentials.yml", "r"))
 
 
