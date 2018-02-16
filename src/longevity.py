@@ -18,12 +18,12 @@ def compute_longevity():
             update_documents(current_hash)
             prev_hash = current_hash
             current_hash = {}
+            current_date = date
 
+        if song_id in prev_hash:
+            current_hash[song_id] = [document_id, prev_hash['song_id'][1] + 1]
         else:
-            if song_id in prev_hash:
-                current_hash[song_id] = [document_id, prev_hash['song_id'][1] + 1]
-            else:
-                current_hash[song_id] = [document_id, 1]
+            current_hash[song_id] = [document_id, 1]
 
     return
 
