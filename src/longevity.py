@@ -9,7 +9,7 @@ def compute_longevity():
     current_hash = {}
     current_date = "1958-08-04"
 
-    for document in billboard_ranks.find().sort('_id', pymongo.DESCENDING):
+    for document in billboard_ranks.find().sort('date', pymongo.ASCENDING):
         document_id = document["_id"]
         date = document["date"]
         song_id = document["song_id"]
@@ -24,7 +24,6 @@ def compute_longevity():
             current_hash[song_id] = [document_id, prev_hash[song_id][1] + 1]
         else:
             current_hash[song_id] = [document_id, 1]
-
 
     update_documents(current_hash)
 
