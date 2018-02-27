@@ -4,7 +4,6 @@ import csv
 
 class Sampler:
     def __init__(self, spot_feat, rank_range=100, sample_size=100, alpha=0.5):
-        #self.spot_feat = [feature for feature in spot_feat]
         self.spot_feat = spot_feat
         self.rank_range = rank_range
         self.sample_size = sample_size
@@ -24,7 +23,8 @@ class Sampler:
 
     @staticmethod
     def outfile_setup(feature):
-        sampling_outfile = open('sampling_results.csv', 'w')
+        sampling_file_name = 'sampling_results_' + feature + '.csv'
+        sampling_outfile = open(sampling_file_name, 'w')
         probability_outfile = open('probability_results.txt', 'w')
 
         sampling_outfile.write("Date," + feature + '\n')
@@ -43,12 +43,14 @@ class Sampler:
         longevity_list = []
         song_id_list = []
 
-        for billboard_document in self.billboard_ranks.find().sort([["date", pymongo.ASCENDING], ["rank", pymongo.ASCENDING]]):
+        for billboard_document in self.billboard_ranks.find(no_cursor_timeout=True).sort(
+                [["date", pymongo.ASCENDING], ["rank", pymongo.ASCENDING]]):
             bill_rank = billboard_document['rank']
             bill_date = billboard_document['date']
             song_id = billboard_document['song_id']
             bill_longevity = billboard_document['longevity']
 
+            # Future work: Make this process into a function
             if current_date != bill_date:
                 print(current_date)
                 longevity_sum = sum(longevity_list)
@@ -75,6 +77,21 @@ class Sampler:
             song_id_list.append(song_id)
 
             #song_document = self.songs.find_one({"song_id": billboard_document["song_id"]})
+
+        print(current_date)
+        longevity_sum = sum(longevity_list)
+        rank_sum = sum(rank_list)
+
+        if len(longevity_list) != len(rank_list):
+            raise Exception
+
+        probability_list = [self.compute_probability(rank_list[i], rank_sum, longevity_list[i],
+                                                     longevity_sum, self.alpha) for i in range(100)]
+
+        self.write_to_probability_outfile(probability_list, current_date)
+
+        weighted_average = self.get_weighted_sample(probability_list, song_id_list)
+        self.write_to_sampling_outfile(current_date, weighted_average)
 
     def get_weighted_sample(self, prob, id_list):
         feat_avg, total_songs_with_features = self.compute_feat_avg(id_list)
@@ -127,9 +144,11 @@ class Sampler:
         return
 
 def run():
-    sample = Sampler("danceability")
-    sample.sample_data()
-    sample.outfile_close()
+    for _,feature in enumerate(('loudness', 'duration_ms', 'tempo', 'key', 'instrumentalness', 'energy', 'acousticness',
+                                'speechiness', 'time_signature', 'danceability', 'liveness', 'mode', 'valence')):
+        sample = Sampler(feature)
+        sample.sample_data()
+        sample.outfile_close()
 
 if __name__ == "__main__":
     run()
