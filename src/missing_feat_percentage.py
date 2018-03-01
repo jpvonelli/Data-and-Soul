@@ -26,4 +26,5 @@ for billboard_document in billboard_ranks.find(no_cursor_timeout=True).sort(
     if song_lookup is None:
         missing_spotify_feat_count += 1
 
-
+if missing_spotify_feat_count > 5:
+    outfile.write(str(current_date) + ", " + str(missing_spotify_feat_count))
