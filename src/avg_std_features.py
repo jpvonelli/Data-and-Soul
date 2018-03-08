@@ -49,6 +49,8 @@ class Avg_Std:
         feat_metrics = []
 
         for item in reader:
+            if item['Date'] == '1958-08-04':
+                continue
             feat_metrics.append(float(item[feature]))
 
         return self.__get_avg(feat_metrics)
