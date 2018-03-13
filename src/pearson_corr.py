@@ -9,14 +9,13 @@ class Pearson_Corr:
                              "danceability", "liveness", "mode", "valence"]
 
         self.combos = self.__create_combinations(self.feature_list)
-        self.corr_outfile, self.writer = self.__outfile_setup(self.combos)
+        self.corr_outfile = self.__outfile_setup()
 
     @staticmethod
-    def __outfile_setup(combinations):
+    def __outfile_setup():
         corr_outfile = open('corr_results.csv', 'w')
-        writer = csv.DictWriter(corr_outfile, fieldnames=combinations)
-        writer.writeheader()
-        return corr_outfile, writer
+        corr_outfile.write('Combination, ' + 'Pearson Correlation Coefficient, ' + 'P-Value' + '\n')
+        return corr_outfile
 
     @staticmethod
     def __create_combinations(features):
@@ -39,19 +38,14 @@ class Pearson_Corr:
         self.corr_outfile.write(metric)
 
     def run_correlation(self):
-        total = len(self.combos) - 1
-        count = 0
         for couple in self.combos:
             data_set1 = self.__read_from_sampling_file(couple[0])
             data_set2 = self.__read_from_sampling_file(couple[1])
 
             result = stats.pearsonr(data_set1, data_set2)
-            self.corr_outfile.write(str(result))
 
-            if count != total:
-                self.corr_outfile.write(', ')
-
-        self.corr_outfile.write('\n')
+            if result[0] >= 0.75 or result[0] <= -0.75:
+                self.corr_outfile.write(str(couple) + ', ' + str(result[0]) + ', ' + str(result[1]) + '\n')
 
         return
 
