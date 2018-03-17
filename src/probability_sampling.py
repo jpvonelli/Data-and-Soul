@@ -3,14 +3,16 @@ import random
 import csv
 
 class Sampler:
-    def __init__(self, spot_feat, rank_range=100, sample_size=100, alpha=0.5):
+    def __init__(self, spot_feat, rank_range=100, sample_size=100, alpha_rank=0.5, alpha_longevity=0.5):
         self.spot_feat = spot_feat
         self.rank_range = rank_range
         self.sample_size = sample_size
-        self.alpha = alpha
+        self.alpha_rank = alpha_rank
+        self.alpha_longevity = alpha_longevity
+        self.alpha_preference = self.compute_alpha_preference(self.alpha_rank, self.alpha_longevity)
 
         self.client, self.db, self.billboard_ranks, self.songs = self.db_setup()
-        self.probability_results, self.sampling_results = self.outfile_setup(self.spot_feat)
+        self.probability_results, self.sampling_results = self.outfile_setup(self.spot_feat, self.alpha_preference)
 
     @staticmethod
     def db_setup():
@@ -22,8 +24,8 @@ class Sampler:
         return client, db, billboard_ranks, songs
 
     @staticmethod
-    def outfile_setup(feature):
-        sampling_file_name = 'sampling_results_' + feature + '.csv'
+    def outfile_setup(feature, alpha_preference):
+        sampling_file_name = 'sampling_results' + alpha_preference + feature + '.csv'
         sampling_outfile = open(sampling_file_name, 'w')
         probability_outfile = open('probability_results.txt', 'w')
 
@@ -35,6 +37,14 @@ class Sampler:
         self.probability_results.close()
         self.sampling_results.close()
 
+    @staticmethod
+    def compute_alpha_preference(rank, longevity):
+        if rank > longevity:
+            return '_rank_preference_'
+        if rank < longevity:
+            return '_longevity_preference_'
+
+        return '_'
 
     def sample_data(self):
         current_date = "1958-08-04"
@@ -60,7 +70,7 @@ class Sampler:
                     raise Exception
 
                 probability_list = [self.compute_probability(rank_list[i], rank_sum, longevity_list[i],
-                                                             longevity_sum, self.alpha) for i in range(100)]
+                                                             longevity_sum, self.alpha_rank, self.alpha_longevity) for i in range(100)]
 
                 self.write_to_probability_outfile(probability_list, current_date)
 
@@ -86,7 +96,7 @@ class Sampler:
             raise Exception
 
         probability_list = [self.compute_probability(rank_list[i], rank_sum, longevity_list[i],
-                                                     longevity_sum, self.alpha) for i in range(100)]
+                                                     longevity_sum, self.alpha_rank, self.alpha_longevity) for i in range(100)]
 
         self.write_to_probability_outfile(probability_list, current_date)
 
@@ -129,8 +139,8 @@ class Sampler:
             if r <= 0:
                 return i
 
-    def compute_probability(self, rank, rank_sum, longevity, longevity_sum, alpha):
-        return alpha * (rank / rank_sum) + (1 - alpha) * (longevity / longevity_sum)
+    def compute_probability(self, rank, rank_sum, longevity, longevity_sum, alpha_rank, alpha_longevity):
+        return alpha_rank * (rank / rank_sum) + (1 - alpha_longevity) * (longevity / longevity_sum)
 
     def write_to_sampling_outfile(self, date, average):
         self.sampling_results.write(str(date) + "," + str(average) + '\n')
@@ -146,7 +156,7 @@ class Sampler:
 def run():
     for _,feature in enumerate(('loudness', 'duration_ms', 'tempo', 'key', 'instrumentalness', 'energy', 'acousticness',
                                 'speechiness', 'time_signature', 'danceability', 'liveness', 'mode', 'valence')):
-        sample = Sampler(feature)
+        sample = Sampler(feature, alpha_rank=0.75, alpha_longevity=0.25)
         sample.sample_data()
         sample.outfile_close()
 
