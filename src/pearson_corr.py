@@ -3,10 +3,12 @@ from itertools import combinations
 import csv
 
 class Pearson_Corr:
-    def __init__(self):
+    def __init__(self, alpha=''):
         self.feature_list = ["loudness", "duration_ms", "tempo", "key", "instrumentalness", "energy",
                              "acousticness", "speechiness", "time_signature",
                              "danceability", "liveness", "mode", "valence"]
+
+        self.alpha = alpha
 
         self.combos = self.__create_combinations(self.feature_list)
         self.corr_outfile = self.__outfile_setup()
@@ -25,11 +27,18 @@ class Pearson_Corr:
         self.corr_outfile.close()
 
     def __read_from_sampling_file(self, feature):
-        infile = open('sampling_results_' + feature + '.csv', 'r')
+        if self.alpha != '':
+            infile = open('sampling_results_' + self.alpha + '_preference_' + feature + 'csv', 'r')
+        else:
+            infile = open('sampling_results_' + feature + '.csv', 'r')
+            
         reader = csv.DictReader(infile)
         data = []
 
         for metric in reader:
+            if metric['Date'] == '1958-08-04':
+                continue
+            
             data.append(float(metric[feature]))
 
         return data
@@ -50,7 +59,7 @@ class Pearson_Corr:
         return
 
 def run():
-    pearson = Pearson_Corr()
+    pearson = Pearson_Corr(alpha='rank')
     pearson.run_correlation()
     pearson.outfile_close()
 

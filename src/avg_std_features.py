@@ -2,17 +2,20 @@ import numpy as np
 import csv
 
 class Avg_Std:
-    def __init__(self):
+    def __init__(self, alpha_preference = ''):
         self.feature_list = ["loudness", "duration_ms", "tempo", "key", "instrumentalness", "energy",
                              "acousticness", "speechiness", "time_signature",
                              "danceability", "liveness", "mode", "valence"]
 
-        self.avg_outfile, self.std_outfile = self.__outfile_setup(self.feature_list)
+        self.alpha_preference = alpha_preference
+
+        self.avg_outfile, self.std_outfile = self.__outfile_setup(self.feature_list, self.alpha_preference)
 
     @staticmethod
-    def __outfile_setup(features):
-        avg_outfile = open('avg_results.csv', 'w')
-        std_outfile = open('std_results.csv', 'w')
+    def __outfile_setup(features, alpha):
+        alpha_outfile = '_' + alpha
+        avg_outfile = open('avg_results' + alpha_outfile + '.csv', 'w')
+        std_outfile = open('std_results' + alpha_outfile + '.csv', 'w')
 
         for i in range(len(features)):
             if i == len(features) - 1:
@@ -30,7 +33,10 @@ class Avg_Std:
         self.std_outfile.close()
 
     @staticmethod
-    def __setup_infile(feature):
+    def __setup_infile(feature, alpha):
+        if alpha != '':
+            return open('sampling_results_' + alpha + '_preference' + '_' + feature + '.csv', 'r')
+
         return open('sampling_results_' + feature + '.csv', 'r')
 
     def avg_std(self):
@@ -44,7 +50,7 @@ class Avg_Std:
         return
 
     def __compute_avg_from_csv(self, feature):
-        feature_infile =  self.__setup_infile(feature)
+        feature_infile =  self.__setup_infile(feature, self.alpha_preference)
         reader = csv.DictReader(feature_infile)
         feat_metrics = []
 
@@ -56,7 +62,7 @@ class Avg_Std:
         return self.__get_avg(feat_metrics)
 
     def __compute_std_from_csv(self, feature):
-        feature_infile = self.__setup_infile(feature)
+        feature_infile = self.__setup_infile(feature, self.alpha_preference)
         reader = csv.DictReader(feature_infile)
         feat_metrics = []
 
@@ -98,7 +104,7 @@ class Avg_Std:
 
 
 def run():
-    avg_std = Avg_Std()
+    avg_std = Avg_Std('rank')
     avg_std.avg_std()
     return
 
