@@ -11,11 +11,11 @@ class Pearson_Corr:
         self.alpha = alpha
 
         self.combos = self.__create_combinations(self.feature_list)
-        self.corr_outfile = self.__outfile_setup()
+        self.corr_outfile = self.__outfile_setup(self.alpha)
 
     @staticmethod
-    def __outfile_setup():
-        corr_outfile = open('corr_results.csv', 'w')
+    def __outfile_setup(alpha):
+        corr_outfile = open('corr_results_' + alpha + '_preference.csv', 'w')
         corr_outfile.write('Combination, ' + 'Pearson Correlation Coefficient, ' + 'P-Value' + '\n')
         return corr_outfile
 
