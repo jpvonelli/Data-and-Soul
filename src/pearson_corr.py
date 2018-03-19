@@ -28,7 +28,7 @@ class Pearson_Corr:
 
     def __read_from_sampling_file(self, feature):
         if self.alpha != '':
-            infile = open('sampling_results_' + self.alpha + '_preference_' + feature + 'csv', 'r')
+            infile = open('sampling_results_' + self.alpha + '_preference_' + feature + '.csv', 'r')
         else:
             infile = open('sampling_results_' + feature + '.csv', 'r')
             
